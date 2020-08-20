@@ -1,0 +1,14 @@
+{
+  "name": "stylebot_js",
+  "version": "1.0.0",
+  "description": "A stylebot for the Texas Tribune; when triggered, calls information from Airtable",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Avriana Allen",
+  "license": "ISC",
+  "dependencies": {
+    "airtable": "^0.9.0"
+  }
+}
