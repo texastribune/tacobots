@@ -11,7 +11,7 @@ At the Texas Tribune, reporters and editors often ask for help creating a good h
 - On the [Slack API](https://api.slack.com/), click `start building`. 
 - Enter the name of your app. We used `Hoedown Helper` and select the Slack you want to install the App on.  
 
-**App Permissions**
+**Set App Permissions**
 - Click on `OAuth & Permissions` and scroll to the bottom of the page where it says scopes. 
 - Under `Bot Token Scopes` click `Add an  OAuth Scope`. 
 - Select `channels:history` and `chat:write`. 
@@ -19,7 +19,7 @@ At the Texas Tribune, reporters and editors often ask for help creating a good h
 - Click `allow`. You will be return to the OAuth page. 
 - At the top of the page there should be an access token. Copy everything that follows `xoxb-` This is your `BOT_TOKEN` and should be set in Lambda. 
 
-**Event Subscriptions**
+**Set Event Subscriptions**
 - Click on `Event Subscriptions` and enable events. 
 - You will see a place to add your request url. Add the Lambda endpoint here. It should verify automatically. 
 - Once your url has been verified, open `Subscribe to bot events` and select `message.channels`.
