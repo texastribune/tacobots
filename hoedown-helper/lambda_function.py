@@ -22,7 +22,7 @@ def lambda_handler(data, context):
     # Get Response Channel
     channel = event['channel']
     # If the message is a thread, get the text and thread ts.
-    if event["thread_ts"]:
+    if 'thread_ts' in  event:
         thread = event['thread_ts']
         message = event['blocks'][0]['elements'][0]['elements'][0]['text']
     # Otherwise get the normal test and ts
