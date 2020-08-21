@@ -30,9 +30,6 @@ def airtable_checks(messageText):
         message = None
     else:
         message = "According to the <https://docs.google.com/document/d/16GVkfnrvXhv-MnLCZ6vG3Tu-bTMdnVulkZdHlHai9Zw/|StyleGuide>:\n" + "\n".join(style_errors)
-
-
-    print(message)
     return message
 
 
@@ -46,16 +43,16 @@ def lambda_handler(data, context):
         'Content-type': 'application/json',
         'Authorization': 'Bearer xoxb-{}'.format(os.environ['BOT_TOKEN'])
     }  
-    # Get event
-    event = data['event']
-    # Check if the request contains a challenge
-    challenge_answer = data.get("challenge")
+    challenge_answer = data.get('challenge')
     # If it does, verify the request
-    if challenge_answer:
+    if 'challenge' in data:
         return {
             'statusCode': 200,
             'body': challenge_answer
         }
+    # Get event
+    event = data['event']
+    # Check if the request contains a challenge
 
     if 'bot_profile' in event:
         return 0
