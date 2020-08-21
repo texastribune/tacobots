@@ -57,16 +57,20 @@ def lambda_handler(data, context):
             'body': challenge_answer
         }
 
+    if 'bot_profile' in event:
+        return 0
+
     # Get Response Channel
     channel = event['channel']
+    message = event['text']
     # If the message is a thread, get the text and thread ts.
     if 'thread_ts' in  event:
         thread = event['thread_ts']
-        message = event['blocks'][0]['elements'][0]['elements'][0]['text']
+        # message = event['blocks'][0]['elements'][0]['elements'][0]['text']
     # Otherwise get the normal test and ts
     else:
         thread = event['ts']
-        message = event['text']
+    
     # Create response and set the thread and channel
 
     parsed_message = airtable_checks(message)
