@@ -38,6 +38,18 @@ def airtable_checks(messageText):
 def lambda_handler(data, context):
     # print logs to aws for debugging / development
     print(f"Received event:\n{data}\nWith context:\n{context}")
+
+
+    SLACK_TOKEN = os.environ['SLACK_TOKEN']
+    token = data.get('token')
+
+    # exit early if slack token is wrong or missing
+    if token != SLACK_TOKEN:
+        return {
+            'text': 'Something is wrong with the Slack token.',
+            'response_type': 'ephemeral'
+        }
+
     # Set headers for requests
     headers = {
         'Content-type': 'application/json',
