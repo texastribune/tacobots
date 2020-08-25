@@ -1,0 +1,12 @@
+__pycache__
+bin
+certifi
+certifi-2020.6.20.dist-info
+chardet
+chardet-3.0.4.dist-info
+idna
+idna-2.10.dist-info
+requests
+requests-2.24.0.dist-info
+urllib3
+urllib3-1.25.10.dist-info
