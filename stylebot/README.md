@@ -1,6 +1,9 @@
-The StyleBot
+<h1 align="center">
+  Stylebot
+</h1>
+
 ------------
-> StyleBot is a [custom slash command](https://api.slack.com/interactivity/slash-commands) that runs as a serverless function on AWS Lambda.
+> StyleBot is a [custom slash command](https://api.slack.com/interactivity/slash-commands) that returns information from the style guide upon request.  It runs as an AWS Lambda function.
 
 ### Slash Command Bot
 Slack has an app, [Slash Commands](https://slack.com/apps/A0F82E8CA-slash-commands), which makes custom commands simple. The StyleBot was created using this app, and can be found in `Configurations` under `Settings` . 
@@ -10,23 +13,28 @@ Slack has an app, [Slash Commands](https://slack.com/apps/A0F82E8CA-slash-comman
 - Autocomplete: `Yes`
 - Description: _Find a term in the Style Guide_
 
+## Requirements
+* [Lambda](https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Types=tier%23always-free)
+* [Airtable](https://airtable.com/pricing)
+* [Slack](https://slack.com/get-started#/)
+
+
 ### Environmental Variables
-The StyleBot requires one environmental variable:
-- `AIRTABLE_API_KEY`
-- `AIRTABLE_BASE_ID`
-- `SLACK_TOKEN`
-- `STYLEGUIDE_URL`
+Set the following environment variables in Lambda UI:
+| Variable            | Description                                                |
+| :------------------ | :--------------------------------------------------------- |
+| `AIRTABLE_API_KEY`  | Airtable account API                                       |
+| `AIRTABLE_BASE_ID`  | The Airtable Base ID for styleguide                        |
+| `SLACK_TOKEN`       | Slash Commands > Integration Settings> "Token"             |
+| `STYLEGUIDE_URL`    | URL to Styleguide documentation (Google Doc, website, etc) |
+
 
 ### Deploy
-The StyleBot slash command runs as a serverless function on AWS Lambda.  Though it's possible to use the Lambda UI text editor to make changes to `index.js` for quick testing, changes should always be version controlled through this repo.  
+Deploy to AWS Lambda function.  If there are local changes in the Lambda UI not reflected in this repo, this will overwrite them.
 
-To deploy changes:
-1.  Use your text editor to update stylebot locally
-1.  Save and git commit your changes
-1.  Deploy to Lambda
-    ```sh
-    make deploy
-    ```
-    - `make deploy` requires:
-      - AWS CLI installed & configured with your credentials
-      - NPM installed
+```sh
+# enter this directory
+cd stylebot
+# install dependencies and deploy zipped package to aws lambda
+make deploy
+```
