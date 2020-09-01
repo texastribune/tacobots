@@ -27,7 +27,7 @@ exports.handler = async function (event, context) {
 async function queryStyleGuide(searchValue) {
   try {
     const results = await new Promise((resolve, reject) => {
-      base("dictionary")
+      base("style guide")
         .select({
           // Check if the value entered matches any of the entries in the table
           filterByFormula: `SEARCH('${searchValue}', LOWER({Name}))`,

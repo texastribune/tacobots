@@ -5,7 +5,7 @@ def airtable_checks(messageText):
     air_headers = {
             'Authorization': 'Bearer {}'.format(os.environ['AIRTABLE_API_KEY'])
             }
-    response = requests.get('https://api.airtable.com/v0/{}/stylechecks?'.format(os.environ['AIRTABLE_BASE_ID']), headers=air_headers).json()
+    response = requests.get('https://api.airtable.com/v0/{}/style%20checks?'.format(os.environ['AIRTABLE_BASE_ID']), headers=air_headers).json()
     # Clean response
     potential_errors = [(record['fields']['error'], record['fields']['correction'], record['fields']['type']) for record in response['records']]
     # Convert to set of strings 
