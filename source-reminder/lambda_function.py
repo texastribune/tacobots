@@ -1,6 +1,7 @@
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import requests
+from requests.exceptions import HTTPError, ConnectionError, Timeout, RequestException
 from datetime import date, datetime, timedelta
 import logging
 import os
@@ -9,32 +10,45 @@ from slack_sdk.errors import SlackApiError
 
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/admin.directory.user']
 API_ENDPOINT = 'https://www.texastribune.org/api/v2/articles/'
-credentials = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)  # Add credentials to the service account.
-client = gspread.authorize(credentials)  # Authorize the client sheet.
-sheet = client.open('Source Diversity Submission (Responses) 2021')  # Get the instance of the spreadsheet.
-sheet_instance = sheet.get_worksheet(1)  # Get instance of the second sheet.
-records_data = sheet_instance.get_all_records()  # Get all records of the data of the instance.
-empty_line = {'Timestamp': '', 'Your Name': '', 'Headline ': '', 'Link': '',
-              'Date of Publication': '', 'Is this for the ProPublica/The Texas Tribune investigative unit?': '',
-              'Type': '', 'Topic': '', 'Byline': '', 'Name of Source': '', 'Type of Source (choose best option)': '',
-              'Is this story based on news made by this person?': '',
-              'Did you confirm with this source how they identify in terms of race and gender?': '',
-              'Any notes about how asking this source went?': '',
-              'Gender': '', 'Race/Ethnicity': '', 'Do you have another source? ': '', 'Email Address': ''}
-records_data.remove(empty_line)  # Edge case.
+FORM_URL = os.environ['FORM_URL']
+# Add credentials to the service account.
+credentials = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
+# Authorize the client sheet.
+client = gspread.authorize(credentials)
+# Get the instance of the spreadsheet.
+sheet = client.open('Source Diversity Submission (Responses) 2021')
+# Get instance of the second sheet.
+sheet_instance = sheet.get_worksheet(1)
+# Get all records of the data of the instance.
+records_data = sheet_instance.get_all_records()
+headers = {'headline': 'Headline ', 'pub_date': 'Date of Publication'}
+
 start = date.today() - timedelta(weeks=3)
 end = date.today() - timedelta(weeks=1)
 
-# View the data for the relevant window of time.
+# View the data for the relevant window of time and filter out empty lines.
+records_data = filter(lambda i: not all(value == '' for value in i.values()), records_data)
 timeframe_records = sorted(
-    filter(lambda x: start <= datetime.strptime(x['Date of Publication'], '%m/%d/%Y').date() <= end, records_data),
-    key=lambda i: i['Date of Publication'])
-sheet_headlines = [k['Headline '] for k in timeframe_records]
+    filter(lambda x: start <= datetime.strptime(x[headers['pub_date']], '%m/%d/%Y').date() <= end, records_data),
+    key=lambda i: i[headers['pub_date']])
+sheet_headlines = [k[headers['headline']] for k in timeframe_records]
 
 
 def request_data(limit, start_date, end_date):
     query = {'limit': limit, 'start_date': start_date, 'end_date': end_date}
-    return requests.get(API_ENDPOINT, params=query)
+    try:
+        response_data = requests.get(API_ENDPOINT, params=query)
+        return response_data
+    except HTTPError as errh:
+        print("HTTP Error:", errh)  # Should Slack send a message to the channel, stating that an error occurred?
+    except ConnectionError as errc:
+        print("Error Connecting:", errc)
+    except Timeout as errt:
+        print("Timeout Error:", errt)
+    except RequestException as err:
+        print("Something Else:", err)
+
+    return 0
 
 
 response = request_data(100, start, end)
@@ -74,8 +88,7 @@ blocks = [
         "type": "section",
         "text": {
             "type": "mrkdwn",
-            # TODO - Format dates properly.
-            "text": "We found *{} articles* from *{} to {}* that do not have source information documented.".format(len(missing_full), start, end)
+            "text": "We found *{} articles* from *{} to {}* that do not have source information documented.".format(len(missing_full), start.strftime("%B %-d"), end.strftime("%B %-d"))
         },
         "accessory": {
             "type": "button",
@@ -85,7 +98,7 @@ blocks = [
                 "emoji": True
             },
             "value": "click_me_123",
-            "url": "https://docs.google.com/forms/d/e/1FAIpQLSd653OLiLaYL2xJANKMucEoBLgcyeYCTCVScDiUAv6_qX4iWA/viewform",
+            "url": FORM_URL,
             "action_id": "button-action"
         }
     }
@@ -93,13 +106,13 @@ blocks = [
 
 
 def generate_blocks():
+    # Going to limit the number of identified articles during the development process.
     for item in missing_full[:3]:
         names = [x['author'] for x in item['authors']]
         headline = item['headline']
         sitewide_image = item['sitewide_image']['url']
         link = item['url']
-        pub_date = item['pub_date']
-        # TODO - Format dates properly.
+        pub_date = datetime.strptime(item['pub_date'], '%Y-%m-%dT%H:%M:%S%z').strftime("%B %-d")
         blocks.insert(2, cell('*<{}|{}>*\n{}\n{}'.format(link, headline, 'By ' + itemize(names), pub_date), sitewide_image))
         blocks.insert(2, divider)
     blocks.append({
@@ -119,8 +132,10 @@ def generate_blocks():
 
 
 def lambda_handler(data, context):
-    print(f"Received event:\n{data}\nWith context:\n{context}.")  # For debugging purposes.
-    SLACK_BOT_TOKEN = os.environ['SLACK_BOT_TOKEN']  # Keys for the Slack API should be stored as environment variables for security.
+    # For debugging purposes.
+    print(f"Received event:\n{data}\nWith context:\n{context}.")
+    # Keys for the Slack API should be stored as environment variables for security.
+    SLACK_BOT_TOKEN = os.environ['SLACK_BOT_TOKEN']
     token = data.get('token')
     # Exit early if Slack token is wrong, missing or otherwise problematic.
     if token != SLACK_BOT_TOKEN:
@@ -134,8 +149,10 @@ def lambda_handler(data, context):
     test_channel_id = 'C094XLFL3'
     generate_blocks()
     try:
-        result = slack_client.chat_postMessage(channel=test_channel_id, blocks=blocks)  # Post the message with WebClient.
-        print(result)  # Print result, which includes information about the message (like TS).
+        # Post the message with WebClient.
+        result = slack_client.chat_postMessage(channel=test_channel_id, blocks=blocks)
+        # Print result, which includes information about the message (like TS).
+        print(result)
     except SlackApiError as e:
         print("Error: {}".format(e))
 
