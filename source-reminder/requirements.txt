@@ -1,0 +1,7 @@
+gspread
+oauth2client
+requests
+datetime
+logging
+os
+slack_sdk
