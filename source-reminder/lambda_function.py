@@ -112,7 +112,10 @@ def generate_blocks():
         headline = item['headline']
         sitewide_image = item['sitewide_image']['url']
         link = item['url']
-        pub_date = datetime.strptime(item['pub_date'], '%Y-%m-%dT%H:%M:%S%z').strftime("%B %-d")
+        try:
+            pub_date = datetime.strptime(item['pub_date'], '%Y-%m-%dT%H:%M:%S%z').strftime("%B %-d")
+        except ValueError:
+            pub_date = item['pub_date']
         blocks.insert(2, cell('*<{}|{}>*\n{}\n{}'.format(link, headline, 'By ' + itemize(names), pub_date), sitewide_image))
         blocks.insert(2, divider)
     blocks.append({
