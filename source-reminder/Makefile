@@ -7,4 +7,4 @@ deploy: install-deps
 	rm deployment_package.zip
 
 install-deps:
-	pip3 install -r $$(pwd) requirements.txt
+	pip3 install -r $$(pwd)/requirements.txt

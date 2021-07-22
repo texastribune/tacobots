@@ -188,15 +188,21 @@ def generate_packages(blocks_group):
     for blocks_group in blocks_group:
         for slug, blocks in blocks_group.items():
             try:
+                staff_email = request_author(slug).json()['staff_email']
                 user_response = slack_client.users_lookupByEmail(token=SLACK_BOT_TOKEN,
-                                                                 email=request_author(slug).json()['email'])
-                slack_id = user_response['user']['id']
-                core = {"blocks": []}  # is this line necessary? can't remember for some reason
-                core['blocks'] = blocks
-                packages.append({'slack_id': slack_id, 'core': core, 'first_name': user_response['user']['profile']['first_name']})
+                                                                 email=staff_email)
+                if staff_email != '':
+                    slack_id = user_response['user']['id']
+                    core = {"blocks": []}
+                    core['blocks'] = blocks
+                    packages.append({'slack_id': slack_id, 'core': core, 'first_name': user_response['user']['profile']['first_name']})
+                else:
+                    continue
             except KeyError:
                 print(f'Author {slug} does not have email address publicly available.')
                 continue
+            except AttributeError:
+                print(f'Something went wrong with the email address returned for {slug}.')
             except SlackApiError as e:
                 print(f"Error posting message: {e}")
                 continue
