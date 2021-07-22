@@ -24,13 +24,12 @@ sheet_instance = sheet.get_worksheet(1)
 records_data = sheet_instance.get_all_records()
 headers = {'headline': 'Headline ', 'pub_date': 'Date of Publication'}
 
-start = date.today() - timedelta(weeks=3)
-end = date.today() - timedelta(weeks=1)
-
+start = datetime.today() - timedelta(weeks=3)
+end = datetime.today() - timedelta(weeks=1)
 # View the data for the relevant window of time and filter out empty lines.
 records_data = filter(lambda i: not all(value == '' for value in i.values()), records_data)
 timeframe_records = sorted(
-    filter(lambda x: start <= datetime.strptime(x[headers['pub_date']], '%m/%d/%Y').date() <= end, records_data),
+    filter(lambda x: start <= datetime.strptime(x[headers['pub_date']], '%m/%d/%Y') <= end, records_data),
     key=lambda i: i[headers['pub_date']])
 sheet_headlines = [k[headers['headline']] for k in timeframe_records]
 SLACK_BOT_TOKEN = os.environ['SLACK_BOT_TOKEN']
@@ -38,10 +37,20 @@ slack_client = WebClient(token=SLACK_BOT_TOKEN)
 
 
 def request_data(limit, start_date, end_date):
-    query = {'limit': limit, 'start_date': start_date, 'end_date': end_date}
+    query = {'limit': limit, 'start_date': start_date.isoformat(), 'end_date': end_date.isoformat()}
     try:
         response_data = requests.get(API_ENDPOINT, params=query)
-        return response_data
+        if response_data.status_code == 200:
+            print('Request is good.')
+            total_items = response_data.json()['results']
+            next_page = response_data.json()['next']
+            while next_page is not None:
+                additional_data = requests.get(next_page).json()
+                total_items.extend(additional_data['results'])
+                next_page = additional_data['next']
+            return total_items
+        else:
+            print(f'Request is not good: {response_data.status_code}.')  # Set missing_full to empty?
     except HTTPError as errh:
         print("HTTP Error:", errh)  # Should Slack send a message to the channel, stating that an error occurred?
     except ConnectionError as errc:
@@ -72,17 +81,11 @@ def request_author(slug):
 
 response = request_data(100, start, end)
 
-if response.status_code == 200:
-    print('Request is good.')
-    sorted_site = sorted(response.json()['results'], key=lambda i: i['pub_date'])
-    site_headlines = sorted([x['headline'] for x in sorted_site])
+sorted_site = sorted(response, key=lambda i: i['pub_date'])
+site_headlines = sorted([x['headline'] for x in sorted_site])
 
-    submitted = set(sheet_headlines) & set(site_headlines)
-    missing = list(sorted(set([x.strip() for x in site_headlines]) - set([x.strip() for x in sheet_headlines])))
-    missing_full = sorted([x for x in sorted_site if x['headline'] in missing], key=lambda i: i['headline'])
-else:
-    print(f'Request is not good: {response.status_code}.')
-    missing_full = []
+missing = list(sorted(set([x.strip() for x in site_headlines]) - set([x.strip() for x in sheet_headlines])))
+missing_full = sorted([x for x in sorted_site if x['headline'] in missing], key=lambda i: i['headline'])
 
 
 def itemize(elements):
