@@ -1,0 +1,24 @@
+version: 2
+updates:
+# Currently each slackbot has it's own directory with dependencies
+# Config Documentation doesn't specify a way to use a list of directories for all npm dependencies
+# If we add a second python or node directory, try adding a second npm/pip package-ecosystem code block
+
+# stylebot directory (node)
+- package-ecosystem: npm
+  directory: "/stylebot"
+  schedule:
+    interval: daily
+    time: "11:00"
+  labels:
+    - "npm"
+    - "dependencies"
+# source-reminder directory (python)
+- package-ecosystem: pip
+  directory: "/source-reminder"
+  schedule:
+    interval: daily
+    time: "11:00"
+  labels:
+    - "python"
+    - "dependencies"
