@@ -1,0 +1,5 @@
+gspread >= 3.7
+oauth2client
+requests
+datetime
+slack_sdk

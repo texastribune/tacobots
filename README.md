@@ -20,6 +20,15 @@ _It always announced without guile._<br>
 
 The Hoedown Helper is a [Slack App](https://api.slack.com/). It runs as a serverless function on AWS Lambda which only triggers when a message is posted to a channel that Hoedown Helper is part of.
 
+## [Source Reminder](./source-reminder/README.md)
+> _&ldquo;Who is a Texan?&rdquo; / As soft-serve cascades outward / from its dispenser,_<br>
+_retrograded not / the swirls as a horse gallops, / never planting all four hooves_<br>
+_in the earth at once._ / _Wherefore, the cross-reference told._ / _How to include all:_<br>
+_that easy and hard._ / _Lauded, uncomplicated._ / _Each identity._<br>
+&mdash;[Matthew Turk](https://github.com/MatthewTurk247)
+
+Source Reminder is a [Slack App](https://medium.com/glasswall-engineering/how-to-create-a-slack-bot-using-aws-lambda-in-1-hour-1dbc1b6f021c) that runs as a serverless function at scheduled intervals to remind staffers to document the race, gender and ethnicity of the sources of the content that they produce.
+
 ## License
 
 MIT
