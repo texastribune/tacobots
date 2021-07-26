@@ -17,6 +17,8 @@ identify any pieces of work for which source information has not been submitted.
 * [Python Requests](https://docs.python-requests.org/)
 * [Python Datetime](https://docs.python.org/3/library/datetime.html)
 
+_We can be loose with the requirements at times, but at least having them pinned to the major version of a package tends to be helpful._
+
 ## Google Cloud Integration
 To properly receive the data from an API call, you&rsquo;ll be required at some point to provide what&rsquo;s called a *credentials* file for said account.
 It lives in the Amazon Web Services Lambda computing platform with the rest of the files and responds to webhook requests. Seven libraries are required, but two of them are pre-installed with Python, so really you only need to worry about packaging the five above.
@@ -65,6 +67,14 @@ Set the following environment variables in the Lambda UI:
 First off, consult the [Slack API](https://api.slack.com/) to see if it answers any questions better than this document could.
 It is a robust API that tries to be intuitive. Since Source Reminder should already exist in our workspace, you need only to open Slack and invite your bot to the appropriate channel, group chat or direct message.
 But wait! There&rsquo;s more. For the computer to do what you want, it needs to be sure that you are who you say you are. Consequently, you may want to spend some time ensuring that you have been granted all the permissions that you need.
+Note that to test this script locally, you will also need the environment variables on your computer. Try [reading them in](https://stackoverflow.com/questions/40216311/reading-in-environment-variables-from-an-environment-file) from an `.env` file or setting them manually in the shell beforehand.
+```sh
+  export FORM_URL=...
+  export SLACK_BOT_TOKEN=...
+```
+The shell method is convenient in the short term, but you will have to rerun these lines every session.
+And while we are on this topic, [@bfreeds](https://github.com/bfreeds) has [suggested](https://github.com/texastribune/tacobots/pull/7#discussion_r674945099) that in the near future we implement two other such variables.
+> Might want to consider adding an environment variable for `PROD` or `DEV` environment to be able to configure the script to run differently based on the environment. This would allow us to add a conditional or some other way to configure where the slack messages get sent (to individual users or the test channel) to prevent potential unwanted messages to folks when developing locally.
 
 ### App Permissions
 - Click on **OAuth & Permissions** and scroll to the bottom of the page to find the scopes. 

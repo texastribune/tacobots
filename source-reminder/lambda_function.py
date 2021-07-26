@@ -8,10 +8,10 @@ import os
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
-scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive',
-         'https://www.googleapis.com/auth/admin.directory.user']
 API_ENDPOINT = 'https://www.texastribune.org/api/v2/articles/'
 FORM_URL = os.environ['FORM_URL']
+scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive',
+         'https://www.googleapis.com/auth/admin.directory.user']
 # Add credentials to the service account.
 credentials = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
 # Authorize the client sheet.
@@ -59,7 +59,7 @@ def request_data(limit, start_date, end_date):
         print("Timeout Error:", errt)
     except RequestException as err:
         print("Something Else:", err)
-
+    # TODO - Add Sentry error handling: https://github.com/texastribune/tacobots/pull/7#discussion_r674926028
     return 0
 
 
