@@ -2,3 +2,32 @@
 node_modules/
 *.zip
 /source-reminder/credentials.json
+.aws-sam
+
+# python packages & directories
+# TODO:  migrate to AWS SAM builds and deploys to keep this tidy
+__pycache__
+_distutils*
+bin
+cachetools*
+certifi*
+charset*
+DateTime*
+google*
+gspread*
+httplib2*
+idna*
+oauth*
+pkg_resources
+pyasn*
+pyparsing*
+pytz*
+requests*
+rsa*
+setuptools*
+six*
+slack*
+urllib3*
+zope*
+distutils*
+
