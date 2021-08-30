@@ -8,7 +8,8 @@ import os
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
-API_ENDPOINT = 'https://www.texastribune.org/api/v2/articles/'
+ARTICLE_API_ENDPOINT = 'https://www.texastribune.org/api/v2/articles/'
+AUTHOR_API_ENDPOINT = 'https://www.texastribune.org/api/v2/authors/'
 FORM_URL = os.environ['FORM_URL']
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive',
          'https://www.googleapis.com/auth/admin.directory.user']
@@ -39,7 +40,7 @@ slack_client = WebClient(token=SLACK_BOT_TOKEN)
 def request_data(limit, start_date, end_date):
     query = {'limit': limit, 'start_date': start_date.isoformat(), 'end_date': end_date.isoformat()}
     try:
-        response_data = requests.get(API_ENDPOINT, params=query)
+        response_data = requests.get(ARTICLE_API_ENDPOINT, params=query)
         if response_data.status_code == 200:
             print('Request is good.')
             total_items = response_data.json()['results']
@@ -65,7 +66,7 @@ def request_data(limit, start_date, end_date):
 
 def request_author(slug):
     try:
-        response_data = requests.get(API_ENDPOINT + slug)
+        response_data = requests.get(AUTHOR_API_ENDPOINT + slug)
         return response_data
     except HTTPError as errh:
         print("HTTP Error:", errh)  # Should Slack send a message to the channel, stating that an error occurred?
