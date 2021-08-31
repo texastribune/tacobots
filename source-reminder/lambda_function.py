@@ -8,9 +8,17 @@ import os
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
+# temp vars for testing
+MANUAL_RUN = True
+DRY_RUN = True
+
 ARTICLE_API_ENDPOINT = 'https://www.texastribune.org/api/v2/articles/'
 AUTHOR_API_ENDPOINT = 'https://www.texastribune.org/api/v2/authors/'
 FORM_URL = os.environ['FORM_URL']
+
+SLACK_REPORT_CHANNEL = os.environ['SLACK_REPORT_CHANNEL']
+SLACK_TEST_CHANNEL = os.environ['SLACK_TEST_CHANNEL']
+
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive',
          'https://www.googleapis.com/auth/admin.directory.user']
 # Add credentials to the service account.
@@ -42,7 +50,7 @@ def request_data(limit, start_date, end_date):
     try:
         response_data = requests.get(ARTICLE_API_ENDPOINT, params=query)
         if response_data.status_code == 200:
-            print('Request is good.')
+            print('Retrieved articles from article API')
             total_items = response_data.json()['results']
             next_page = response_data.json()['next']
             while next_page is not None:
@@ -221,11 +229,13 @@ def send_message(package):
     opener['elements'][0]['text'] = '\u26A0 ' + first_sentence + ' *Kindly <{}|submit a response> to the Google Form at your earliest convenience where applicable.*'.format(FORM_URL)
 
     r_core['blocks'].insert(0, opener)
-    try:
-        return slack_client.chat_postMessage(channel=recipient_id, text=first_sentence, blocks=r_core['blocks'])
-    except SlackApiError as e:
-        print(f'Something went wrong with slack {e}')
-        return None
+    if not DRY_RUN:
+        try:
+            print(f'Sending message to {first_name}...')
+            return slack_client.chat_postMessage(channel=recipient_id, text=first_sentence, blocks=r_core['blocks'])
+        except SlackApiError as e:
+            print(f'Something went wrong with slack {e}')
+            return None
 
 
 # Send all the messages!
@@ -236,6 +246,51 @@ def send_messages(packages):
             print(result)
         else:
             print('Doesn\'t seem like everything went to plan for this package: {}.'.format(package))
+
+# Send report of missing submissions
+def send_report(serialization):
+    slack_blocks = [
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": f"*_Report for {start.strftime('%m/%d/%Y')} - {end.strftime('%m/%d/%Y')}_*",
+            },
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": f"*Number of stories submitted*: {len(sheet_headlines)}\n*Number of stories missing*: {len(missing_full)}",
+            },
+        },
+    ]
+    text_block = ''
+    for slug, articles in serialization.items():
+        text_block += f"\n{slug}\n"
+        for article in sorted(articles, key=lambda i: i['pub_date'], reverse=True):
+            text_block += f"{article['url']}\n"
+
+    slack_blocks.append({
+        "type": "context",
+        "elements": [
+            {
+                "type": "mrkdwn",
+                "text": f"```{text_block}```",
+            },
+        ]
+    })
+
+    if DRY_RUN:
+        source_diversity_channel = SLACK_TEST_CHANNEL
+    else:
+        source_diversity_channel = SLACK_REPORT_CHANNEL
+    try:
+        print('Sending report...')
+        return slack_client.chat_postMessage(channel=source_diversity_channel, text='Source report', blocks=slack_blocks)
+    except SlackApiError as e:
+        print(f'Something went wrong with slack {e}')
+        return None
 
 
 def lambda_handler(data, context):
@@ -257,6 +312,7 @@ def lambda_handler(data, context):
         grouped_blocks = generate_blocks_groups(serialization)
         final_packages = generate_packages(grouped_blocks)
         send_messages(final_packages)
+        send_report(serialization)
         return {
             'statusCode': 200,
             'text': 'Success.',
@@ -269,3 +325,10 @@ def lambda_handler(data, context):
             'text': e,
             'body': {}
         }
+
+if MANUAL_RUN:
+    serialization = serialize_authors(missing_full)
+    grouped_blocks = generate_blocks_groups(serialization)
+    final_packages = generate_packages(grouped_blocks)
+    send_report(serialization)
+    print('Manual run complete')
