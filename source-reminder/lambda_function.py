@@ -236,6 +236,8 @@ def send_message(package):
         except SlackApiError as e:
             print(f'Something went wrong with slack {e}')
             return None
+    else:
+        print(f'Would have sent message to {first_name}...')
 
 
 # Send all the messages!
@@ -330,5 +332,6 @@ if MANUAL_RUN:
     serialization = serialize_authors(missing_full)
     grouped_blocks = generate_blocks_groups(serialization)
     final_packages = generate_packages(grouped_blocks)
+    send_messages(final_packages)
     send_report(serialization)
     print('Manual run complete')
