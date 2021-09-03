@@ -144,7 +144,6 @@ def serialize_authors(articles):
 
 
 def generate_block(article, cowriters):
-    print('generator', cowriters)
     has_cowriters = len(cowriters) >= 1
     addressees = ['You'] + cowriters
     return {
@@ -207,7 +206,8 @@ def generate_packages(blocks_group):
                     slack_id = user_response['user']['id']
                     core = {"blocks": []}
                     core['blocks'] = blocks
-                    packages.append({'slack_id': slack_id, 'core': core, 'first_name': user_response['user']['profile']['first_name']})
+                    name = user_response['user']['profile'].get('first_name') or user_response['user']['profile'].get('real_name')
+                    packages.append({'slack_id': slack_id, 'core': core, 'first_name': name})
                 else:
                     continue
             except KeyError:
@@ -216,7 +216,7 @@ def generate_packages(blocks_group):
             except AttributeError:
                 print(f'Something went wrong with the email address returned for {slug}.')
             except SlackApiError as e:
-                print(f"Error posting message: {e}")
+                print(f"Error posting message for {slug}: {e}")
                 continue
     return packages
 
@@ -245,9 +245,11 @@ def send_messages(packages):
     for package in packages:
         result = send_message(package)
         if result is not None:
-            print(result)
+            # print(result)
+            print('sent')
         else:
-            print('Doesn\'t seem like everything went to plan for this package: {}.'.format(package))
+            # print('Doesn\'t seem like everything went to plan for this package: {}.'.format(package))
+            print('skipped')
 
 # Send report of missing submissions
 def send_report(serialization):
