@@ -3,6 +3,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 import requests
 from requests.exceptions import HTTPError, ConnectionError, Timeout, RequestException
 from datetime import date, datetime, timedelta
+import json
 import logging
 import os
 from slack_sdk import WebClient
@@ -35,6 +36,10 @@ headers = {'headline': 'Headline ', 'pub_date': 'Date of Publication'}
 
 start = datetime.today() - timedelta(weeks=3)
 end = datetime.today() - timedelta(weeks=1)
+format_template = '%-m-%-d-%y'
+start_formatted = start.strftime(format_template)
+end_formatted = end.strftime(format_template)
+
 # View the data for the relevant window of time and filter out empty lines.
 records_data = filter(lambda i: not all(value == '' for value in i.values()), records_data)
 timeframe_records = sorted(
@@ -95,6 +100,9 @@ site_headlines = sorted([x['headline'] for x in sorted_site])
 
 missing = list(sorted(set([x.strip() for x in site_headlines]) - set([x.strip() for x in sheet_headlines])))
 missing_full = sorted([x for x in sorted_site if x['headline'] in missing], key=lambda i: i['headline'])
+
+report_title = f"Report from {start_formatted} to {end_formatted}"
+report_stats = f"Number of stories submitted: {len(sheet_headlines)}\nNumber of stories missing: {len(missing_full)}"
 
 
 def itemize(elements):
@@ -193,6 +201,14 @@ opener = {
     ]
 }
 
+slack_report_title = {
+    "type": "header",
+    "text": {
+        "type": "plain_text",
+        "text": report_title,
+    },
+}
+
 
 def generate_packages(blocks_group):
     packages = []
@@ -221,7 +237,7 @@ def generate_packages(blocks_group):
     return packages
 
 
-def send_message(package):
+def send_message(package, index):
     recipient_id, first_name, r_core = package['slack_id'], package['first_name'], package['core']
     num_articles = len(r_core['blocks'])//2
     is_plural = num_articles != 1
@@ -229,21 +245,27 @@ def send_message(package):
     opener['elements'][0]['text'] = '\u26A0 ' + first_sentence + ' *Kindly <{}|submit a response> to the Google Form at your earliest convenience where applicable.*'.format(FORM_URL)
 
     r_core['blocks'].insert(0, opener)
-    if not DRY_RUN:
+    r_core['blocks'].insert(1, slack_report_title)
+    if DRY_RUN:
+        print(f'Would have sent message to {first_name}...')
+        if index == 0:
+            # create JSON to preview in https://app.slack.com/block-kit-builder
+            with open(f"slack-dm-example.json", 'w') as f:
+                json.dump(r_core['blocks'], f)
+    else:
         try:
+            # send to Slack
             print(f'Sending message to {first_name}...')
             return slack_client.chat_postMessage(channel=recipient_id, text=first_sentence, blocks=r_core['blocks'])
         except SlackApiError as e:
             print(f'Something went wrong with slack {e}')
             return None
-    else:
-        print(f'Would have sent message to {first_name}...')
 
 
 # Send all the messages!
 def send_messages(packages):
-    for package in packages:
-        result = send_message(package)
+    for index, package in enumerate(packages):
+        result = send_message(package, index)
         if result is not None:
             # print(result)
             print('sent')
@@ -254,18 +276,12 @@ def send_messages(packages):
 # Send report of missing submissions
 def send_report(serialization):
     slack_blocks = [
+        slack_report_title,
         {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": f"*_Report for {start.strftime('%m/%d/%Y')} - {end.strftime('%m/%d/%Y')}_*",
-            },
-        },
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": f"*Number of stories submitted*: {len(sheet_headlines)}\n*Number of stories missing*: {len(missing_full)}",
+                "text": report_stats,
             },
         },
     ]
@@ -285,13 +301,18 @@ def send_report(serialization):
         ]
     })
 
-    if DRY_RUN:
-        source_diversity_channel = SLACK_TEST_CHANNEL
-    else:
-        source_diversity_channel = SLACK_REPORT_CHANNEL
     try:
-        print('Sending report...')
-        return slack_client.chat_postMessage(channel=source_diversity_channel, text='Source report', blocks=slack_blocks)
+        if DRY_RUN:
+            # generate report txt file
+            with open(f"source-report-{start_formatted}-{end_formatted}.txt", 'w') as f:
+                f.write(f'{report_title}\n{report_stats}\n{text_block}')
+            # preview in https://app.slack.com/block-kit-builder
+            with open(f"slack-report-example.json", 'w') as g:
+                json.dump(slack_blocks, g)
+        else:
+            # send to Slack
+            print('Sending report...')
+            slack_client.chat_postMessage(channel=SLACK_REPORT_CHANNEL, text='Source report', blocks=slack_blocks)
     except SlackApiError as e:
         print(f'Something went wrong with slack {e}')
         return None
