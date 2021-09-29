@@ -94,8 +94,12 @@ def request_author(slug):
 
 
 response = request_data(100, start, end)
+# filter out non-sourced stories
+# Note: we could do this by looking at series, but these all happen to have headline conventions, which saves us some extra API calls
+filtered = [
+    article for article in response if not article['headline'].startswith(('T-Squared:', 'Analysis:', 'TribCast:'))]
 
-sorted_site = sorted(response, key=lambda i: i['pub_date'])
+sorted_site = sorted(filtered, key=lambda i: i['pub_date'])
 site_headlines = sorted([x['headline'] for x in sorted_site])
 
 missing = list(sorted(set([x.strip() for x in site_headlines]) - set([x.strip() for x in sheet_headlines])))
