@@ -3,6 +3,7 @@ node_modules/
 *.zip
 /source-reminder/credentials.json
 .aws-sam
+.env
 
 # python packages & directories
 # TODO:  migrate to AWS SAM builds and deploys to keep this tidy
