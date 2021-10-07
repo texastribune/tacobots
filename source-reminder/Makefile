@@ -13,3 +13,18 @@ install-deps:
 # todo: switch deploy from manually zipping the directory to using AWS SAM
 sam-build:
 	sam build --use-container
+
+# docker commands
+image:
+	docker build -t source-reminder/lambda:0.1 .
+
+container: image
+	docker run \
+		--rm -it -d \
+		-p 9000:8080 \
+		source-reminder/lambda:0.1
+
+test-container: container
+	curl -XPOST \
+		"http://localhost:9000/2015-03-31/functions/function/invocations" \
+		-d '{}'
