@@ -43,7 +43,8 @@ end_formatted = end.strftime(format_template)
 # View the data for the relevant window of time and filter out empty lines.
 records_data = filter(lambda i: not all(value == '' for value in i.values()), records_data)
 timeframe_records = sorted(
-    filter(lambda x: start <= datetime.strptime(x[headers['pub_date']], '%m/%d/%Y') <= end, records_data),
+    filter(lambda x: start - timedelta(days=1) <= datetime.strptime(
+        x[headers['pub_date']], '%m/%d/%Y') <= end + timedelta(days=1), records_data),
     key=lambda i: i[headers['pub_date']])
 sheet_headlines = [k[headers['headline']] for k in timeframe_records]
 SLACK_BOT_TOKEN = os.environ['SLACK_BOT_TOKEN']
