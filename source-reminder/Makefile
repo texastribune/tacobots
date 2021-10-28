@@ -25,7 +25,7 @@ run-container: build-image
 		-v $$(pwd)/credentials.json:/var/task/credentials.json \
 		-v $$(pwd)/src/lambda_function.py:/var/task/lambda_function.py \
 		--env-file=docker-env \
-		source-reminder/lambda:0.1
+		source-reminder/lambda:local
 
 test-container:
 	curl -XPOST \
