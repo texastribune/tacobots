@@ -15,16 +15,16 @@ sam-build:
 	sam build --use-container
 
 # docker commands
-image:
+build-image:
 	docker build -t source-reminder/lambda:0.1 .
 
-container: image
+run-container: build-image
 	docker run \
 		--rm -it -d \
 		-p 9000:8080 \
 		source-reminder/lambda:0.1
 
-test-container: container
+test-container: run-container
 	curl -XPOST \
 		"http://localhost:9000/2015-03-31/functions/function/invocations" \
 		-d '{}'
