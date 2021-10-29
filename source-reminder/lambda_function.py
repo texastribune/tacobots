@@ -29,7 +29,7 @@ client = gspread.authorize(credentials)
 # Get the instance of the spreadsheet.
 sheet = client.open('Source Diversity Submission (Responses) 2021')
 # Get instance of the second sheet.
-sheet_instance = sheet.get_worksheet(1)
+sheet_instance = sheet.get_worksheet(2)
 # Get all records of the data of the instance.
 records_data = sheet_instance.get_all_records()
 headers = {'headline': 'Headline ', 'pub_date': 'Date of Publication'}
