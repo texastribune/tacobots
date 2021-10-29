@@ -28,8 +28,8 @@ credentials = ServiceAccountCredentials.from_json_keyfile_name('credentials.json
 client = gspread.authorize(credentials)
 # Get the instance of the spreadsheet.
 sheet = client.open('Source Diversity Submission (Responses) 2021')
-# Get instance of the second sheet.
-sheet_instance = sheet.get_worksheet(2)
+# Get worksheet by its name.
+sheet_instance = sheet.worksheet('responses_raw')
 # Get all records of the data of the instance.
 records_data = sheet_instance.get_all_records()
 headers = {'headline': 'Headline ', 'pub_date': 'Date of Publication'}
