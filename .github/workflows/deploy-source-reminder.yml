@@ -20,6 +20,9 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
+      - name: Checkout git tacobots repository
+        uses: actions/checkout@v2
+
       # Build the docker image, tag it with the git commit, and push to AWS ECR
       - name: Build, tag, and push image to Amazon ECR
         env:
