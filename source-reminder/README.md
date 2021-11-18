@@ -63,6 +63,8 @@ Set the following environment variables in the Lambda UI:
 | :------------------ | :---------------------------------------------------- |
 | `FORM_URL`          | Internal URL to source diversity Google Form.                   |
 | `SLACK_BOT_TOKEN`   | **Oauth & Permissions > Bot User OAuth Access Token** (including the `xoxb-`). |
+| `MANUAL_RUN`        | `BOOLEAN`, if `TRUE` will output to console |
+| `DRY_RUN`        | `BOOLEAN`, if `TRUE` won't send slack messages |
 ## Slack
 First off, consult the [Slack API](https://api.slack.com/) to see if it answers any questions better than this document could.
 It is a robust API that tries to be intuitive. Since Source Reminder should already exist in our workspace, you need only to open Slack and invite your bot to the appropriate channel, group chat or direct message.

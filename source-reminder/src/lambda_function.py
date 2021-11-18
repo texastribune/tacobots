@@ -9,9 +9,9 @@ import os
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
-# temp vars for testing
-MANUAL_RUN = True
-DRY_RUN = True
+# Env variables for running locally 
+MANUAL_RUN = os.environ['MANUAL_RUN'] # if TRUE, outputs to console
+DRY_RUN = os.environ['DRY_RUN'] # if TRUE, won't send slack messages
 
 ARTICLE_API_ENDPOINT = 'https://www.texastribune.org/api/v2/articles/'
 AUTHOR_API_ENDPOINT = 'https://www.texastribune.org/api/v2/authors/'
