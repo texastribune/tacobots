@@ -8,6 +8,14 @@ import logging
 import os
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
+import sentry_sdk 
+from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
+
+sentry_sdk.init(
+    dsn=os.environ['SENTRY_DSN'],
+    integrations=[AwsLambdaIntegration()],
+    traces_sample_rate=1.0,
+)
 
 # temp vars for testing
 MANUAL_RUN = True
