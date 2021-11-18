@@ -12,7 +12,7 @@ install-deps:
 
 # docker commands
 build-image:
-	docker build -t source-reminder/lambda:0.1 .
+	docker build -t source-reminder/lambda:local .
 
 run-container: build-image
 	docker run \
