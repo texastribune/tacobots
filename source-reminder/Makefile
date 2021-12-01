@@ -16,11 +16,12 @@ build-image:
 
 run-container: build-image
 	docker run \
-		--rm -it -d \
+		--rm -it \
 		-p 9000:8080 \
 		-v $$(pwd)/credentials.json:/var/task/credentials.json \
 		-v $$(pwd)/src/lambda_function.py:/var/task/lambda_function.py \
 		--env-file=docker-env \
+		--name source-reminder \
 		source-reminder/lambda:local
 
 test-container:
