@@ -8,9 +8,12 @@ import logging
 import os
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
+import boto3
+import base64
+from botocore.exceptions import ClientError
 
 # temp vars for testing
-MANUAL_RUN = True
+MANUAL_RUN = False
 DRY_RUN = True
 
 ARTICLE_API_ENDPOINT = 'https://www.texastribune.org/api/v2/articles/'
@@ -323,7 +326,62 @@ def send_report(serialization):
         return None
 
 
+def get_secret(secret_name):
+    print("get_secret() executing...")
+    region_name = "us-east-1"
+
+    # Create a Secrets Manager client
+    session = boto3.session.Session()
+    client = session.client(service_name="secretsmanager", region_name=region_name)
+
+    # In this sample we only handle the specific exceptions for the 'GetSecretValue' API.
+    # See https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
+    # We rethrow the exception by default.
+    try:
+        print("try block to get_secret_value()") # this logs as expected
+        response = client.get_secret_value(SecretId=secret_name)
+        print(response) # this does not log
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "DecryptionFailureException":
+            # Secrets Manager can't decrypt the protected secret text using the provided KMS key.
+            # Deal with the exception here, and/or rethrow at your discretion.
+            raise e
+        elif e.response["Error"]["Code"] == "InternalServiceErrorException":
+            # An error occurred on the server side.
+            # Deal with the exception here, and/or rethrow at your discretion.
+            raise e
+        elif e.response["Error"]["Code"] == "InvalidParameterException":
+            # You provided an invalid value for a parameter.
+            # Deal with the exception here, and/or rethrow at your discretion.
+            raise e
+        elif e.response["Error"]["Code"] == "InvalidRequestException":
+            # You provided a parameter value that is not valid for the current state of the resource.
+            # Deal with the exception here, and/or rethrow at your discretion.
+            raise e
+        elif e.response["Error"]["Code"] == "ResourceNotFoundException":
+            # We can't find the resource that you asked for.
+            # Deal with the exception here, and/or rethrow at your discretion.
+            raise e
+    else:
+        # Decrypts secret using the associated KMS CMK.
+        # Depending on whether the secret is a string or binary, one of these fields will be populated.
+        if "SecretString" in response:
+            print("SecretString in response!")
+            secret = response["SecretString"]
+        else:
+            print("SecretString not in response!")
+            decoded_binary_secret = base64.b64decode(
+                response["SecretBinary"]
+            )
+    print('ending getSecret()')
+
+
 def lambda_handler(data, context):
+    print('lambda_handler() executing...')
+
+    # try getting the secret
+    get_secret(os.environ["AWS_SECRET"])
+
     # For debugging purposes.
     print(f"Received event:\n{data}\nWith context:\n{context}.")
     # Keys for the Slack API should be stored as environment variables for security.
@@ -338,16 +396,12 @@ def lambda_handler(data, context):
     logger = logging.getLogger(__name__)
 
     try:
-        serialization = serialize_authors(missing_full)
-        grouped_blocks = generate_blocks_groups(serialization)
-        final_packages = generate_packages(grouped_blocks)
-        send_messages(final_packages)
-        send_report(serialization)
-        return {
-            'statusCode': 200,
-            'text': 'Success.',
-            'body': {}
-        }
+        # serialization = serialize_authors(missing_full)
+        # grouped_blocks = generate_blocks_groups(serialization)
+        # final_packages = generate_packages(grouped_blocks)
+        # send_messages(final_packages)
+        # send_report(serialization)
+        return {"statusCode": 200, "text": "Success.", "body": {}}
     except SlackApiError as e:
         # At this point, should we return 0 or the following?
         return {
@@ -356,10 +410,10 @@ def lambda_handler(data, context):
             'body': {}
         }
 
-if MANUAL_RUN:
-    serialization = serialize_authors(missing_full)
-    grouped_blocks = generate_blocks_groups(serialization)
-    final_packages = generate_packages(grouped_blocks)
-    send_messages(final_packages)
-    send_report(serialization)
-    print('Manual run complete')
+# if MANUAL_RUN:
+#     serialization = serialize_authors(missing_full)
+#     grouped_blocks = generate_blocks_groups(serialization)
+#     final_packages = generate_packages(grouped_blocks)
+#     send_messages(final_packages)
+#     send_report(serialization)
+#     print("Manual run complete")
