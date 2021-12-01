@@ -331,14 +331,6 @@ def send_report(serialization):
 def lambda_handler(data, context):
     # For debugging purposes.
     print(f"Received event:\n{data}\nWith context:\n{context}.")
-    # Keys for the Slack API should be stored as environment variables for security.
-    token = data.get('token')
-    # Exit early if Slack token is wrong, missing or otherwise problematic.
-    if token != SLACK_BOT_TOKEN:
-        return {
-            'text': 'Something is wrong with the Slack token.',
-            'response_type': 'ephemeral'
-        }
 
     logger = logging.getLogger(__name__)
 
