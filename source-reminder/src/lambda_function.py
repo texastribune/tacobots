@@ -25,8 +25,10 @@ scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/au
          'https://www.googleapis.com/auth/admin.directory.user']
 
 # Setup Google Service Account credentials
-GOOGLE_CREDENTIALS_BASE64 = os.environ['GOOGLE_CREDENTIALS_BASE64'] # base64 encoded so can be stored as env variable
-GOOGLE_CREDENTIALS_JSON=json.loads(base64.b64decode(GOOGLE_CREDENTIALS_BASE64)) # decodes base64 and serializes json string
+# Decode base64 environment variable and serialize json
+GOOGLE_CREDENTIALS_JSON = json.loads(
+    base64.b64decode(os.environ["GOOGLE_CREDENTIALS_BASE64"])
+)
 credentials = ServiceAccountCredentials.from_json_keyfile_dict(GOOGLE_CREDENTIALS_JSON, scope)
 
 # Authorize the client sheet.
