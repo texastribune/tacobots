@@ -5,6 +5,9 @@ node_modules/
 .aws-sam
 /source-reminder/source-report-*
 .env
+# convesation-export static site
+/conversation-export/src/_data
+/conversation-export/_site
 
 # python packages & directories
 # TODO:  migrate to AWS SAM builds and deploys to keep this tidy

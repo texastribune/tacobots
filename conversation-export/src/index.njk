@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ channel.name }} channel history</title>
+  <!-- bulma for quick default styles -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+</head>
+<body style="padding: 20px;">
+  <h1 style="font-size: 2rem">#{{ channel.name }}</h1>
+  <h2 style="font-size: 1rem">{{ channel.purpose.value }}</h2>
+  <hr>
+  {% macro files(files) %}
+    {% for file in files %}
+      {{ file.mimetype }}
+      {% if file.mimetype == 'image/png' %}
+        {% if file.thumb_1024 %}
+          {% set imageSrc = file.thumb_1024 %}
+        {% else %}
+          {% set imageSrc = file.thumb_720 %}
+        {% endif %}
+        <div><strong><a href="{{ imageSrc }}">image - {{ file.title }}</a></strong></div>
+      {% elif file.mimetype == 'text/html' %}
+        <div><strong>{{file.name}}</strong></div>
+      {% endif %}
+    {% endfor %}
+  {% endmacro %}
+  {% for message in messages|sort(false, true, 'ts') %}
+    <p style="margin-top: 15px;">
+      <time><code>{{ message.date }}</code></time>
+      <strong>
+        {% if message.subtype == 'bot_message' %}
+          {{ message.username }}:
+        {% else %}
+          {{ users[message.user] }}:
+        {% endif %}
+      </strong>
+    {% if message.text %}{{ message.text }}{% endif %}
+    {% if message.attachments %}
+      {% for attachment in message.attachments %}
+        {{ attachment.title }}
+        {% for field in attachment.fields %}
+          <div>{{ field.value }}</div>
+        {% endfor %}
+      {% endfor %}
+    {% endif %}
+    {% if message.files %}
+      {{ files(message.files) }}
+    {% endif %}
+    {% if message.replies|length > 0 %}
+      <div style="margin-left: 20px;">
+        <div>~ THREAD ~</div>
+        {% for reply in message.replies %}
+          <div>
+            <strong>{{ users[reply.user] }}:</strong> {{ reply.text }}
+            {{ files(reply.files) }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    </p>
+  {% endfor %}
+</body>
+</html>
