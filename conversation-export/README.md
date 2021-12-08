@@ -21,9 +21,9 @@ cd conversation-exporter
 export SLACK_EXPORT_CHANNEL=<channel-id> SLACK_EXPORT_TOKEN=<slack-token-from-vault>
 ```
 
-2. Go to the specified channel in Slack and type `@Conversation Export`. Slack will prompt to invite the bot, which is what we want.
+3. Go to the specified channel in Slack and type `@Conversation Export`. Slack will prompt to invite the bot, which is what we want.
 
-4. Install python libraries
+4. Install python and npm libraries
 ```sh
 make
 ```
@@ -32,28 +32,18 @@ make
 ```sh
 python messages.py
 ```
-(or)
-```sh
-python3 messages.py
-```
-This build a json file called `messages.json` in /src/_data
+(Note you may need to specify `python3`)
+This builds a json file called `messages.json` in `/src/_data`
 
-6. Get user and channel data. This is quicker
+6. Get user and channel data. This shouldn't take as long message retrieval.
 ```sh
 python users.py
 ```
 ```sh
 python channel.py
 ```
-(or)
-```sh
-python3 users.py
-```
-```sh
-python3 channel.py
-```
 
-7. Confirm you have messages.json, users.json, channel.json in /src/_data
+7. Confirm you have `messages.json`, `users.json`, `channel.json` in `/src/_data`
 
 8. Start local preview
 ```sh
