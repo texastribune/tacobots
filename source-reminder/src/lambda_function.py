@@ -6,6 +6,7 @@ from datetime import date, datetime, timedelta
 import json
 import logging
 import os
+import base64
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
@@ -22,8 +23,12 @@ SLACK_TEST_CHANNEL = os.environ['SLACK_TEST_CHANNEL']
 
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive',
          'https://www.googleapis.com/auth/admin.directory.user']
-# Add credentials to the service account.
-credentials = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
+
+# Setup Google Service Account credentials
+GOOGLE_CREDENTIALS_BASE64 = os.environ['GOOGLE_CREDENTIALS_BASE64'] # base64 encoded so can be stored as env variable
+GOOGLE_CREDENTIALS_JSON=json.loads(base64.b64decode(GOOGLE_CREDENTIALS_BASE64)) # decodes base64 and serializes json string
+credentials = ServiceAccountCredentials.from_json_keyfile_dict(GOOGLE_CREDENTIALS_JSON, scope)
+
 # Authorize the client sheet.
 client = gspread.authorize(credentials)
 # Get the instance of the spreadsheet.
