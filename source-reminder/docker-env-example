@@ -4,3 +4,4 @@ GOOGLE_CREDENTIALS_BASE64=
 SLACK_BOT_TOKEN=xoxb...
 SLACK_REPORT_CHANNEL=
 SLACK_TEST_CHANNEL=
+SENTRY_DSN=https://username:password@appserver/project
