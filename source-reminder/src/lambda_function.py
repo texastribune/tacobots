@@ -11,7 +11,7 @@ from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
 # temp vars for testing
-MANUAL_RUN = True
+MANUAL_RUN = False
 DRY_RUN = True
 
 ARTICLE_API_ENDPOINT = 'https://www.texastribune.org/api/v2/articles/'
