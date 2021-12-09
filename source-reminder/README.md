@@ -9,60 +9,55 @@ Thus, this tool exists to cross-reference articles on the website and articles s
 identify any pieces of work for which source information has not been submitted.
 
 ## Requirements
+* Docker
 * [Lambda](https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Types=tier%23always-free) (Amazon Web Services)
 * [Google Drive](https://www.google.com/drive/)
-* [Slack SDK](https://slack.dev/node-slack-sdk/)
-* [Gspread](https://github.com/burnash/gspread) 
-* [Client library](https://github.com/googleapis/oauth2client) for OAuth 2.0&mdash;also known as `oauth2client`
-* [Python Requests](https://docs.python-requests.org/)
-* [Python Datetime](https://docs.python.org/3/library/datetime.html)
 
 _We can be loose with the requirements at times, but at least having them pinned to the major version of a package tends to be helpful._
+## Running Locally
+1. Clone repo and `cd source-reminder`
+2. Configure a local `docker-env` file with the needed environment variables
+    ```sh
+    cp docker-env-example docker-env
+    ```
+3. Run Source Reminder Lambda container
+    ```sh
+    # builds a local image "source-reminder/lambda:local"
+    # then runs a container from the image named "source-reminder" on localhost:9000
+    make run-container
+    ```
+4. From a new terminal window, invoke the lambda function (simulates a webhook request to execute Lambda)
+    ```sh
+    make test-container
+    # runs: curl -XPOST "http://localhost:9000/2015-03-31/functions/functioninvocations" -d '{}'
+    # In case of source-reminder, we send an empty data body in the request to invoke the function ("-d '{}'"), but for other lambda functions, like hoedown-helper, this data body can be configured to test different invokation scenarios.
+    ```
+5. The function's output will show up in the terminal running the `source-reminder` Lambda container (matches what would show up in AWS Cloudwatch logs on function invokation).
+6. _Optional_:  if `DRY_RUN=True`, no Slack messages will be sent.  The console will output what _would_ have been sent.  If you want to run the function locally and have it send the messages (running as production), then set `DRY_RUN=FALSE`.
+### Developing/testing changes to lambda_function.py
+Note:  To test out changes to `lambda_function.py`, you will need to:
+- Make and save changes to the file
+- Stop the `source-reminder` container (`ctrl+c` or `docker stop source-reminder`)
+- Restart the `source-reminder container`(`make run-container`)
 
-## Google Cloud Integration
-To properly receive the data from an API call, you&rsquo;ll be required at some point to provide what&rsquo;s called a *credentials* file for said account.
-It lives in the Amazon Web Services Lambda computing platform with the rest of the files and responds to webhook requests. Seven libraries are required, but two of them are pre-installed with Python, so really you only need to worry about packaging the five above.
-
+While we do volume mount `lambda_function.py` into the `source-reminder` container at runtime, so changes to the local file are immediately mirrored/synced inside the running container, it seems that the way the Lambda container works it won't pick up those changes until it's restarted.
 ## Deployment
 
-Once the integrity of the code is certain, deploy it to its AWS Lambda function. If there are local changes in the Lambda UI not reflected in this repo, this will overwrite them. The Serverless Application Model
-requires Docker and the AWS CLI. Down the road, we may implement deployment with the following:
+This is deployed as a containerized AWS Lambda function.  A Github Action will build and push a new `:latest` Docker image to AWS Container Registry, which will be used to run a container on the next Lambda function execution.
 
-| Operating System            | Instructions                                           |
-| :------------------ | :---------------------------------------------------- |
-| macOS          | Install SAM CLI with Brew. First run `brew tap aws/tap` and then `brew install aws-sam-cli` immediately thereafter.                   |
-| Windows   | Install SAM CLI using an [MSI](https://github.com/awslabs/aws-sam-cli/releases/latest/download/AWS_SAM_CLI_64_PY3.msi). |
-| Linux   | Install SAM CLI by downloading an [archive file](https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam-cli-linux-x86_64.zip). |
-For now, developers will use their local copy of the Makefile to handle it.
-Ideally, this procedure would be decentralized, carried out through one of several [more sophisticated methods](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-getting-started-hello-world.html) and automated with a GitHub Action, which is what may eventually come to pass.
-At present, the crafty among us will see that `sam` creates a hidden folder after the builder, regardless of whether deployment takes place. The contents of the folder may be [uploaded](https://docs.aws.amazon.com/lambda/latest/dg/python-package.html) to AWS manually, but we will avoid this _in vitro_ approach for now.
+## Google Cloud Integration
+A Google Service Account is granted read-only permission to the Google Sheet needed for the API call in this function.  The Service Account Credentials from Google as a JSON file/string, and provided to this function as an environment variable that is base64 encoded (using default unix system package `base64 credentials.json`).  It gets decoded back to json at runtime.  This allows us to configure the json as an environment variable.
 
-If you are still feeling bold today, go ahead and give it a go in Finder with <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>.</kbd>. Remember to archive the files in the folder, not the folder itself. Yes, highlight all the items inside the folder and do it that way.
-Otherwise, it will not work properly.
-
-## Packaging
-
-Here is the real deal:
-```sh
-# Enter the directory at hand.
-cd source-reminder
-# Install dependencies and deploy zipped package to us-east-1 in Lambda via Makefile.
-make
-```
-If this does not work right away, do not panic. Contact a colleague to see whether the error is critical or merely trivial in some way.
-There are many ways for it to go wrong and a handful of ways for it to go right. See [**Troubleshooting**](#troubleshooting) for some quick fixes.
-## Lambda
-Once the code is in the right place, along with its dependencies, you are within eyeshot of the end.
-1. In the interface, look for the orange button that says **Create function** in the upper right.
-2. Follow the on-screen prompts until you have blank function.
-3. Click **Upload from** and upload the `.zip` file containing the package.
 ### Environment Variables
 Set the following environment variables in the Lambda UI:
 
 | Variable            | Description                                           |
 | :------------------ | :---------------------------------------------------- |
 | `FORM_URL`          | Internal URL to source diversity Google Form.                   |
+| `GOOGLE_CREDENTIALS_BASE64`   | Google Service Account credentials, `base64`-encoded string. |
 | `SLACK_BOT_TOKEN`   | **Oauth & Permissions > Bot User OAuth Access Token** (including the `xoxb-`). |
+| `SLACK_REPORT_CHANNEL`   | ID of the Slack channel to send the finished report to. |
+| `SLACK_TEST_CHANNEL`   | ID of Slack test channel. |
 ## Slack
 First off, consult the [Slack API](https://api.slack.com/) to see if it answers any questions better than this document could.
 It is a robust API that tries to be intuitive. Since Source Reminder should already exist in our workspace, you need only to open Slack and invite your bot to the appropriate channel, group chat or direct message.
