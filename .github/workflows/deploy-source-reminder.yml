@@ -28,11 +28,21 @@ jobs:
 
       # Build the docker image, tag it with the git commit, and push to AWS ECR
       - name: Build, tag, and push image to Amazon ECR
+        id: build
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: source-reminder
-          IMAGE_TAG: latest
+          IMAGE_TAG: ${{ github.sha }}
         working-directory: source-reminder
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+      - name: Update Lambda function with new Docker Image
+        env:
+          IMAGE_URI: ${{ steps.build.outputs.image }}
+        run: |
+          aws lambda update-function-code \
+            --function-name arn:aws:lambda:$AWS_REGION:$AWS_ACCOUNT_ID:function:SourceReminder \
+            --image-uri $IMAGE_URI
