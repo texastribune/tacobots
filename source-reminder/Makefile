@@ -7,7 +7,7 @@ deploy: install-deps
 	rm deployment_package.zip
 
 install-deps:
-	pip3 install -t $$(pwd) -r $$(pwd)/requirements.txt
+	pip3 install -t "$$(pwd)" -r "$$(pwd)/requirements.txt"
 
 
 # docker commands
@@ -18,8 +18,8 @@ run-container: build-image
 	docker run \
 		--rm -it \
 		-p 9000:8080 \
-		-v $$(pwd)/credentials.json:/var/task/credentials.json \
-		-v $$(pwd)/src/lambda_function.py:/var/task/lambda_function.py \
+		-v "$$(pwd)/credentials.json:/var/task/credentials.json" \
+		-v "$$(pwd)/src/lambda_function.py:/var/task/lambda_function.py" \
 		--env-file=docker-env \
 		--name source-reminder \
 		source-reminder/lambda:local

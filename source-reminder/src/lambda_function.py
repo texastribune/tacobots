@@ -19,8 +19,8 @@ sentry_sdk.init(
 )
 
 # temp vars for testing
-MANUAL_RUN = False
-DRY_RUN = True
+MANUAL_RUN = os.environ['MANUAL_RUN']
+DRY_RUN = os.environ['DRY_RUN']
 
 ARTICLE_API_ENDPOINT = 'https://www.texastribune.org/api/v2/articles/'
 AUTHOR_API_ENDPOINT = 'https://www.texastribune.org/api/v2/authors/'
