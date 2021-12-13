@@ -33,7 +33,7 @@ _We can be loose with the requirements at times, but at least having them pinned
     # In case of source-reminder, we send an empty data body in the request to invoke the function ("-d '{}'"), but for other lambda functions, like hoedown-helper, this data body can be configured to test different invokation scenarios.
     ```
 5. The function's output will show up in the terminal running the `source-reminder` Lambda container (matches what would show up in AWS Cloudwatch logs on function invokation).
-6. _Optional_:  if `DRY_RUN=True`, no Slack messages will be sent.  The console will output what _would_ have been sent.  If you want to run the function locally and have it send the messages (running as production), then set `DRY_RUN=FALSE`.
+6. _Optional_:  if environment variable `DRY_RUN=True`, no Slack messages will be sent.  The console will output what _would_ have been sent.  If you want to run the function locally and have it send the messages (running as production), then set environment variable `DRY_RUN=FALSE`.
 ### Developing/testing changes to lambda_function.py
 Note:  To test out changes to `lambda_function.py`, you will need to:
 - Make and save changes to the file
@@ -58,6 +58,8 @@ Set the following environment variables in the Lambda UI:
 | `SLACK_BOT_TOKEN`   | **Oauth & Permissions > Bot User OAuth Access Token** (including the `xoxb-`). |
 | `SLACK_REPORT_CHANNEL`   | ID of the Slack channel to send the finished report to. |
 | `SLACK_TEST_CHANNEL`   | ID of Slack test channel. |
+| `DRY_RUN`   | Boolean. If `True` will send slack messages, if `False` will just output to console. |
+| `MANUAL_RUN`   | Boolean.  Set to `True` if you are running outside of a docker container (using your machine's python runtime). |
 ## Slack
 First off, consult the [Slack API](https://api.slack.com/) to see if it answers any questions better than this document could.
 It is a robust API that tries to be intuitive. Since Source Reminder should already exist in our workspace, you need only to open Slack and invite your bot to the appropriate channel, group chat or direct message.

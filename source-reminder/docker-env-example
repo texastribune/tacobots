@@ -4,3 +4,8 @@ GOOGLE_CREDENTIALS_BASE64=
 SLACK_BOT_TOKEN=xoxb...
 SLACK_REPORT_CHANNEL=
 SLACK_TEST_CHANNEL=
+
+# Set to False if you *do* want messages to send to Slack (Set to true in Lambda function)
+DRY_RUN=True
+# Set to True if you are running function in your local python runtime (not in a Lambda docker container runtime)
+MANUAL_RUN=False
