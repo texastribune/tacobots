@@ -58,8 +58,10 @@ Set the following environment variables in the Lambda UI:
 | `SLACK_BOT_TOKEN`   | **Oauth & Permissions > Bot User OAuth Access Token** (including the `xoxb-`). |
 | `SLACK_REPORT_CHANNEL`   | ID of the Slack channel to send the finished report to. |
 | `SLACK_TEST_CHANNEL`   | ID of Slack test channel. |
+| `SENTRY_DSN`        | DSN for the Sentry project associated with this script. |
 | `DRY_RUN`   | Boolean. If `True` will send slack messages, if `False` will just output to console. |
 | `MANUAL_RUN`   | Boolean.  Set to `True` if you are running outside of a docker container (using your machine's python runtime). |
+
 ## Slack
 First off, consult the [Slack API](https://api.slack.com/) to see if it answers any questions better than this document could.
 It is a robust API that tries to be intuitive. Since Source Reminder should already exist in our workspace, you need only to open Slack and invite your bot to the appropriate channel, group chat or direct message.
