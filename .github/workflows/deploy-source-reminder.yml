@@ -42,7 +42,7 @@ jobs:
       - name: Update Lambda function with new Docker Image
         env:
           IMAGE_URI: ${{ steps.build.outputs.image }}
-          AWS_ACCOUNT_ID: $${{ secrets.AWS_ACCOUNT_ID }}
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
         run: |
           aws lambda update-function-code \
             --function-name arn:aws:lambda:$AWS_REGION:$AWS_ACCOUNT_ID:function:SourceReminder \
