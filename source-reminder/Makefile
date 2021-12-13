@@ -7,7 +7,7 @@ deploy: install-deps
 	rm deployment_package.zip
 
 install-deps:
-	pip3 install -t $$(pwd) -r $$(pwd)/requirements.txt
+	pip3 install -t "$$(pwd)" -r "$$(pwd)/requirements.txt"
 
 
 # docker commands
