@@ -5,6 +5,7 @@ node_modules/
 .aws-sam
 /source-reminder/source-report-*
 .env
+docker-env
 
 # python packages & directories
 # TODO:  migrate to AWS SAM builds and deploys to keep this tidy

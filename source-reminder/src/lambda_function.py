@@ -6,12 +6,13 @@ from datetime import date, datetime, timedelta
 import json
 import logging
 import os
+import base64
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
 # temp vars for testing
-MANUAL_RUN = True
-DRY_RUN = True
+MANUAL_RUN = os.environ['MANUAL_RUN']
+DRY_RUN = os.environ['DRY_RUN']
 
 ARTICLE_API_ENDPOINT = 'https://www.texastribune.org/api/v2/articles/'
 AUTHOR_API_ENDPOINT = 'https://www.texastribune.org/api/v2/authors/'
@@ -22,8 +23,14 @@ SLACK_TEST_CHANNEL = os.environ['SLACK_TEST_CHANNEL']
 
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive',
          'https://www.googleapis.com/auth/admin.directory.user']
-# Add credentials to the service account.
-credentials = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
+
+# Setup Google Service Account credentials
+# Decode base64 environment variable and serialize json
+GOOGLE_CREDENTIALS_JSON = json.loads(
+    base64.b64decode(os.environ["GOOGLE_CREDENTIALS_BASE64"])
+)
+credentials = ServiceAccountCredentials.from_json_keyfile_dict(GOOGLE_CREDENTIALS_JSON, scope)
+
 # Authorize the client sheet.
 client = gspread.authorize(credentials)
 # Get the instance of the spreadsheet.
@@ -326,14 +333,6 @@ def send_report(serialization):
 def lambda_handler(data, context):
     # For debugging purposes.
     print(f"Received event:\n{data}\nWith context:\n{context}.")
-    # Keys for the Slack API should be stored as environment variables for security.
-    token = data.get('token')
-    # Exit early if Slack token is wrong, missing or otherwise problematic.
-    if token != SLACK_BOT_TOKEN:
-        return {
-            'text': 'Something is wrong with the Slack token.',
-            'response_type': 'ephemeral'
-        }
 
     logger = logging.getLogger(__name__)
 
