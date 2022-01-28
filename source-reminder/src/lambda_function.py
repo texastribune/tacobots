@@ -42,7 +42,7 @@ credentials = ServiceAccountCredentials.from_json_keyfile_dict(GOOGLE_CREDENTIAL
 # Authorize the client sheet.
 client = gspread.authorize(credentials)
 # Get the instance of the spreadsheet.
-sheet = client.open('Source Diversity Submission (Responses) 2021')
+sheet = client.open('Source Diversity Submission (Responses)')
 # Get worksheet by its name.
 sheet_instance = sheet.worksheet('responses_raw')
 # Get all records of the data of the instance.
