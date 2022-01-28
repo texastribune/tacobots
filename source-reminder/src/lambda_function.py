@@ -18,9 +18,14 @@ sentry_sdk.init(
     traces_sample_rate=1.0,
 )
 
-# temp vars for testing
-MANUAL_RUN = os.environ['MANUAL_RUN']
-DRY_RUN = os.environ['DRY_RUN']
+# MANUAL_RUN for running locally and directly in python, skips the Lambda function handling
+MANUAL_RUN=os.environ['MANUAL_RUN']
+# DRY_RUN for testing without sending messages in Slack (outputs to console instead)
+DRY_RUN=os.environ['DRY_RUN']
+
+# Temporarily print the MANUAL and DRY run values to debug Lambda configuration
+print('MANUAL_RUN', MANUAL_RUN)
+print('DRY_RUN', DRY_RUN)
 
 ARTICLE_API_ENDPOINT = 'https://www.texastribune.org/api/v2/articles/'
 AUTHOR_API_ENDPOINT = 'https://www.texastribune.org/api/v2/authors/'
