@@ -21,7 +21,7 @@ sentry_sdk.init(
 # MANUAL_RUN for running locally and directly in python, skips the Lambda function handling
 MANUAL_RUN=os.environ['MANUAL_RUN']
 # DRY_RUN for testing without sending messages in Slack (outputs to console instead)
-DRY_RUN=os.environ['DRY_RUN']
+DRY_RUN=False
 
 # Temporarily print the MANUAL and DRY run values to debug Lambda configuration
 print('MANUAL_RUN', MANUAL_RUN)
