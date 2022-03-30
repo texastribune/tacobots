@@ -46,4 +46,5 @@ jobs:
         run: |
           aws lambda update-function-code \
             --function-name arn:aws:lambda:$AWS_REGION:$AWS_ACCOUNT_ID:function:SourceReminder \
-            --image-uri $IMAGE_URI
+            --image-uri $IMAGE_URI \
+            > /dev/null
