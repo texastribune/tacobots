@@ -9,6 +9,6 @@
   "author": "Avriana Allen",
   "license": "ISC",
   "dependencies": {
-    "airtable": "^0.11.1"
+    "airtable": "^0.11.3"
   }
 }
