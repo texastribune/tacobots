@@ -1,5 +1,3 @@
-#  SLACK_API_TOKEN='xoxb-4011672762055-4289883197508-Vif9OQalF0W5p4qM4vnaJtYh' python3  github_alerts_v1.py
-
 import webhook_payloads
 import json
 import logging
