@@ -20,12 +20,9 @@ def check_vulnerability_alert(request):
       
   # Check to see if 'alert' and 'severity' are in payload --> ensures that this is the correct payload type
   if "alert" in vulnerability_alert:
-      return_status = "Has Alert"
       if "severity" in vulnerability_alert["alert"]:
-          return_status = "Has severity"
           alert_severity = vulnerability_alert["alert"]["severity"]
           if alert_severity == "high" or alert_severity == "critical": 
-              return_status = "Alert severit high or critical"
               try:
                 response = client.chat_postMessage(
                     channel="#testing",
