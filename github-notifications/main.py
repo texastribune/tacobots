@@ -16,7 +16,6 @@ app = Flask(__name__)
 @app.route('/', methods=['POST'])
 def process_request(request):
     webhook_payload = request.get_json()
-    webhook_payload_list = list(webhook_payload)  
     return_status = "Incomplete"
 
     # Check if event caused by dependabot
@@ -28,16 +27,14 @@ def process_request(request):
     if "ref_type" in webhook_payload:
         if webhook_payload["ref_type"] == "branch":
             return_status = create_branch(webhook_payload)
-    
-    # if webhook_payload_list[1] == "ref_type":
-    # elif webhook_payload_list[2] == "pull_request":
+
     if "pull_request" in webhook_payload:
         return_status = pull_request(webhook_payload)
     else:
         print("Key doesn't exist in JSON data")
         
     if return_status == None:
-        return_status = "Incomplete bc Null"
+        return_status = "Null"
     return return_status
 
 def create_branch(payload):
@@ -66,7 +63,6 @@ def get_description(payload, index1, index2):
     return description
 
 def write_message(text, type, url, repo, description, user): 
-    # slack_token = os.environ["SLACK_API_TOKEN"]
     slack_token = os.getenv('SLACK_API_TOKEN')
     client = WebClient(token=slack_token)
     return_status = "Incomplete"
@@ -85,7 +81,7 @@ def write_message(text, type, url, repo, description, user):
                         "type": "button",
                         "text": {
                             "type": "plain_text",
-                            "text": "View " + type + "!"
+                            "text": "View " + type
                             # "emoji": true
                         },
                         "value": "click_me_123",
@@ -101,6 +97,9 @@ def write_message(text, type, url, repo, description, user):
                             "text": description + " - " + user
                         }
                     ]
+                },
+                {
+                    "type": "divider"
                 }
                 ]
             )
